@@ -3,6 +3,7 @@ const User = require("../models/User");
 const CryptoJS = require("crypto-js");
 const { default: mongoose } = require("mongoose");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
 
 //register
 router.post("/register", async (req, res) => {
@@ -36,8 +37,14 @@ router.post("/login", async (req, res) => {
     originalPassword !== req.body.password &&
       res.status(401).json("wrong password or username");
 
+    const accessToken = jwt.sign(
+      { _id: user._id, isAdmin: user.isAdmin },
+      process.env.SECRET_KEY,
+      { expiresIn: "5d" }
+    );
+
     const { password, ...info } = user._doc;
-    res.status(200).json(info);
+    res.status(200).json({ ...info, accessToken });
   } catch (err) {
     console.log(err);
   }
