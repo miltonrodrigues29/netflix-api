@@ -1,8 +1,10 @@
 const router = require("express").Router();
 const User = require("../models/User");
 const CryptoJS = require("crypto-js");
+const { default: mongoose } = require("mongoose");
 require("dotenv").config();
 
+//register
 router.post("/register", async (req, res) => {
   const newUser = new User({
     username: req.body.username,
@@ -16,6 +18,26 @@ router.post("/register", async (req, res) => {
   try {
     const user = await newUser.save();
     res.status(201).json(user);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+//login
+
+router.post("/login", async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    !user && res.status(401).json("Wrong password or username");
+
+    var bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET_KEY);
+    var originalPassword = bytes.toString(CryptoJS.enc.Utf8);
+
+    originalPassword !== req.body.password &&
+      res.status(401).json("wrong password or username");
+
+    const { password, ...info } = user._doc;
+    res.status(200).json(info);
   } catch (err) {
     console.log(err);
   }
