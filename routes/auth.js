@@ -4,6 +4,7 @@ const CryptoJS = require("crypto-js");
 const { default: mongoose } = require("mongoose");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const verify = require("../verifyToken");
 
 //register
 router.post("/register", async (req, res) => {
@@ -38,7 +39,7 @@ router.post("/login", async (req, res) => {
       res.status(401).json("wrong password or username");
 
     const accessToken = jwt.sign(
-      { _id: user._id, isAdmin: user.isAdmin },
+      { id: user._id, isAdmin: user.isAdmin },
       process.env.SECRET_KEY,
       { expiresIn: "5d" }
     );
